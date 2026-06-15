@@ -6,7 +6,7 @@ import React from "react";
 import { COLORS } from "../constants/colors";
 
 interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+  label?: string | React.ReactNode;
   error?: string;
   fullWidth?: boolean;
 }
