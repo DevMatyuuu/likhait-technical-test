@@ -8,6 +8,9 @@ class Expense < ApplicationRecord
   def date_cannot_be_in_future
     return if date.blank?
 
-    errors.add(:date, "cannot be in the future") if date > Date.current
+    errors.add(
+      :date,
+      "cannot be in the future. Please select today or an earlier date."
+    ) if date > Date.current
   end
 end
