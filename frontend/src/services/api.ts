@@ -2,7 +2,7 @@
  * API service for communicating with the backend
  */
 
-import { Expense, ExpenseFormData } from "../types";
+import { Category, CategoryFormData, Expense, ExpenseFormData } from "../types";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
@@ -52,7 +52,7 @@ export async function fetchCategories(): Promise<
 export async function createExpense(data: ExpenseFormData): Promise<Expense> {
   // Convert category name to category_id
   const categories = await fetchCategories();
-  const category = categories.find((c) => c.name === data.category);
+  const category = categories.find((c) => c.id === data.category_id);
 
   const expenseData = {
     description: data.description,
@@ -71,6 +71,36 @@ export async function createExpense(data: ExpenseFormData): Promise<Expense> {
 
   if (!response.ok) {
     throw new Error("Failed to create expense");
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a new category
+ */
+export async function createCategory(
+  data: CategoryFormData
+): Promise<Category> {
+  const response = await fetch(`${API_BASE_URL}/categories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      category: {
+        name: data.name,
+        emoji: data.emoji,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(
+      error?.message || "Failed to create category"
+    );
   }
 
   return response.json();

@@ -3,17 +3,19 @@
  */
 
 import React, { useState } from "react";
-import { Expense, ExpenseFormData } from "../types";
+import { Category, Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
-import { getCategoryEmoji } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
 import { Button, Modal, Pagination } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
+import { logger } from "../utils/devLogger.ts";
 
 interface CalendarExpenseTableProps {
   expenses: Expense[];
   onExpenseUpdated: () => void;
+  categoriesList: Category[];
+  loadingCategories: boolean;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -21,6 +23,8 @@ const ITEMS_PER_PAGE = 10;
 export function CalendarExpenseTable({
   expenses,
   onExpenseUpdated,
+  categoriesList,
+  loadingCategories
 }: CalendarExpenseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -32,6 +36,8 @@ export function CalendarExpenseTable({
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentExpenses = expenses.slice(startIndex, endIndex);
+
+  logger.info("Rendering CalendarExpenseTable with expenses:", expenses);
 
   const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
@@ -142,8 +148,8 @@ export function CalendarExpenseTable({
                     gap: "0.5rem",
                   }}
                 >
-                  <span>{getCategoryEmoji(expense.category)}</span>
-                  <span>{expense.category}</span>
+                  <span>{expense.category.emoji}</span>
+                  <span>{expense.category.name}</span>
                 </span>
               </td>
               <td style={{ ...tdStyle, textAlign: "left", fontWeight: 600 }}>
@@ -191,7 +197,7 @@ export function CalendarExpenseTable({
             initialData={{
               amount: editingExpense.amount.toString(),
               description: editingExpense.description,
-              category: editingExpense.category,
+              category_id: editingExpense.category.id,
               date: formatDate(new Date(editingExpense.date)),
             }}
             onSubmit={handleUpdate}
@@ -199,6 +205,8 @@ export function CalendarExpenseTable({
               setIsEditModalOpen(false);
               setEditingExpense(null);
             }}
+            categories={categoriesList}
+            loadingCategories={loadingCategories}
             submitLabel="Update Expense"
           />
         )}

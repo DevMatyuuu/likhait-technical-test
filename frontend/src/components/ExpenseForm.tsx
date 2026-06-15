@@ -2,23 +2,32 @@
  * Form component for adding/editing expenses
  */
 
+
 import React from "react";
 import { ExpenseFormData } from "../types";
-import { EXPENSE_CATEGORIES } from "../constants/categories";
 import { TextField, SelectBox, Button } from "../vibes";
 import { useExpenseForm } from "../hooks/useExpenseForm";
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 interface ExpenseFormProps {
   initialData?: Partial<ExpenseFormData>;
   onSubmit: (data: ExpenseFormData) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
+  categories: Category[];
+  loadingCategories: boolean;
 }
 
 export function ExpenseForm({
   initialData,
   onSubmit,
   onCancel,
+  categories,
+  loadingCategories,
   submitLabel = "Add Expense",
 }: ExpenseFormProps) {
   const { formData, errors, isSubmitting, handleChange, handleSubmit } =
@@ -26,6 +35,16 @@ export function ExpenseForm({
       initialData,
       onSubmit,
     });
+
+  const categoryOptions = [
+    ...categories
+      .filter((c) => c.name.toLowerCase() !== "other")
+      .map((category) => ({
+        value: category.id.toString() || "",
+        label: category.name,
+      })),
+    { value: "Other", label: "Other" },
+  ];
 
   const formStyle: React.CSSProperties = {
     display: "flex",
@@ -39,10 +58,11 @@ export function ExpenseForm({
     marginTop: "0.5rem",
   };
 
-  const categoryOptions = EXPENSE_CATEGORIES.map((category) => ({
-    value: category,
-    label: category,
-  }));
+  const selectWrapperStyle: React.CSSProperties = {
+    width: "100%",
+    maxHeight: "220px",
+    overflowY: "auto",
+  };
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -69,15 +89,18 @@ export function ExpenseForm({
         required
       />
 
-      <SelectBox
-        label="Category"
-        options={categoryOptions}
-        value={formData.category}
-        onChange={(e) => handleChange("category", e.target.value)}
-        error={errors.category}
-        fullWidth
-        required
-      />
+      {/* SCROLLABLE WRAPPER */}
+      <div style={selectWrapperStyle}>
+        <SelectBox
+          label="Category"
+          options={categoryOptions}
+          value={formData.category_id?.toString() || ""}
+          onChange={(e) => handleChange("category_id", parseInt(e.target.value))}
+          fullWidth
+          required
+          disabled={loadingCategories}
+        />
+      </div>
 
       <TextField
         label="Date"
@@ -98,6 +121,7 @@ export function ExpenseForm({
         >
           {isSubmitting ? "Submitting..." : submitLabel}
         </Button>
+
         {onCancel && (
           <Button
             type="button"
