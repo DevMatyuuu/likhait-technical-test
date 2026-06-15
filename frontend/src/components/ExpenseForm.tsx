@@ -27,6 +27,8 @@ export function ExpenseForm({
       onSubmit,
     });
 
+  const today = new Date().toISOString().split("T")[0];
+
   const formStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -44,8 +46,22 @@ export function ExpenseForm({
     label: category,
   }));
 
+  const tooltipContainerStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.40rem",
+  };
+
+  const helpIconStyle: React.CSSProperties = {
+    cursor: "help",
+    color: "#6b7280",
+    fontSize: "0.875rem",
+    fontWeight: "bold",
+    marginBottom: "-4px",
+  };
+
   return (
-    <form onSubmit={handleSubmit} style={formStyle}>
+    <form onSubmit={handleSubmit} style={formStyle} noValidate>
       <TextField
         label="Amount"
         type="number"
@@ -55,7 +71,6 @@ export function ExpenseForm({
         onChange={(e) => handleChange("amount", e.target.value)}
         error={errors.amount}
         fullWidth
-        required
       />
 
       <TextField
@@ -66,7 +81,6 @@ export function ExpenseForm({
         onChange={(e) => handleChange("description", e.target.value)}
         error={errors.description}
         fullWidth
-        required
       />
 
       <SelectBox
@@ -76,17 +90,26 @@ export function ExpenseForm({
         onChange={(e) => handleChange("category", e.target.value)}
         error={errors.category}
         fullWidth
-        required
       />
 
       <TextField
-        label="Date"
+        label={
+          <span style={tooltipContainerStyle}>
+            Date
+            <span
+              style={helpIconStyle}
+              title="Expenses can only be created for today or earlier dates."
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            </span>
+          </span>
+        }
         type="date"
         value={formData.date}
         onChange={(e) => handleChange("date", e.target.value)}
         error={errors.date}
+        max={today}
         fullWidth
-        required
       />
 
       <div style={buttonGroupStyle}>
@@ -98,6 +121,7 @@ export function ExpenseForm({
         >
           {isSubmitting ? "Submitting..." : submitLabel}
         </Button>
+
         {onCancel && (
           <Button
             type="button"
